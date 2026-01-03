@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 import hashlib
 from fastapi import Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from database import get_connection
+
 
 app = FastAPI()
 
@@ -24,7 +26,18 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
-fake_users_db = {}
+class FavoriteRecipeCreate(BaseModel):
+    spoonacular_id: int
+    title: str
+    image: str | None = None
+
+
+class SearchQueryCreate(BaseModel):
+    ingredients: list[str]
+
+
+fake_favorites_db = {}  # email - list[recipe]
+fake_history_db = {}    # email -list[search]
 
 def sha256_password(password: str) -> bytes:
     return hashlib.sha256(password.encode('utf-8')).digest()
@@ -45,12 +58,11 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return encoded_jwt
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)) -> str:
-    token = credentials.credentials  # это чистый JWT без слова Bearer
+    token = credentials.credentials
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:
-        # токен битый / подпись не подходит / истёк / неверный формат
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
     email = payload.get("sub")
@@ -59,24 +71,102 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_
 
     return email
 
+def get_user_by_email(email: str):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+    return user
+
+def create_user(email: str, password_hash: str):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO users (email, password_hash) VALUES (%s, %s)",
+        (email, password_hash),
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
 @app.post("/register")
 async def register(user: UserCreate):
-    if user.email in fake_users_db:
-        raise HTTPException(status_code=400, detail="Пользователь с указанным E-mail уже зарегистрирован.")
+    existing = get_user_by_email(user.email)
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
     hashed_password = get_password_hash(user.password)
-    fake_users_db[user.email] = {"email": user.email, "hashed_password": hashed_password}
-    return {"message": "Пользователь успешно зарегистрирован!"}
+    create_user(user.email, hashed_password)
+    return {"message": "User registered successfully"}
+
 
 @app.post("/login")
 async def login(user: UserLogin):
-    db_user = fake_users_db.get(user.email)
+    db_user = get_user_by_email(user.email)
     if not db_user:
-        raise HTTPException(status_code=400, detail="Неверный E-mail или пароль.")
-    if not verify_password(user.password, db_user["hashed_password"]):
-        raise HTTPException(status_code=400, detail="Неверный E-mail или пароль.")
-    access_token = create_access_token({"sub": user.email}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+        raise HTTPException(status_code=400, detail="Incorrect email or password")
+
+    if not verify_password(user.password, db_user["password_hash"]):
+        raise HTTPException(status_code=400, detail="Incorrect email or password")
+
+    access_token = create_access_token(
+        {"sub": user.email},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
     return {"access_token": access_token, "token_type": "bearer"}
+
 
 @app.get("/me")
 async def me(current_user_email: str = Depends(get_current_user)):
     return {"email": current_user_email}
+
+@app.get("/favorites")
+async def get_favorites(current_user_email: str = Depends(get_current_user)):
+    return {"items": fake_favorites_db.get(current_user_email, [])}
+
+
+@app.post("/favorites")
+async def add_favorite(
+    recipe: FavoriteRecipeCreate,
+    current_user_email: str = Depends(get_current_user)
+):
+    user_favs = fake_favorites_db.setdefault(current_user_email, [])
+
+    # защита от дублей по spoonacular_id
+    if any(x["spoonacular_id"] == recipe.spoonacular_id for x in user_favs):
+        raise HTTPException(status_code=400, detail="Recipe already in favorites")
+
+    user_favs.append(recipe.model_dump())
+    return {"message": "Added to favorites", "items": user_favs}
+
+
+@app.delete("/favorites/{spoonacular_id}")
+async def remove_favorite(
+    spoonacular_id: int,
+    current_user_email: str = Depends(get_current_user)
+):
+    user_favs = fake_favorites_db.get(current_user_email, [])
+    new_list = [x for x in user_favs if x["spoonacular_id"] != spoonacular_id]
+    fake_favorites_db[current_user_email] = new_list
+    return {"message": "Removed from favorites", "items": new_list}
+
+@app.get("/history")
+async def get_history(current_user_email: str = Depends(get_current_user)):
+    return {"items": fake_history_db.get(current_user_email, [])}
+
+
+@app.post("/history")
+async def add_history_item(
+    query: SearchQueryCreate,
+    current_user_email: str = Depends(get_current_user)
+):
+    user_history = fake_history_db.setdefault(current_user_email, [])
+    user_history.append({
+        "ingredients": query.ingredients,
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    })
+    return {"message": "Saved to history", "items": user_history}
+
