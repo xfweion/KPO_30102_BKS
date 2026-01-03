@@ -35,10 +35,6 @@ class FavoriteRecipeCreate(BaseModel):
 class SearchQueryCreate(BaseModel):
     ingredients: list[str]
 
-
-fake_favorites_db = {}  # email - list[recipe]
-fake_history_db = {}    # email -list[search]
-
 def sha256_password(password: str) -> bytes:
     return hashlib.sha256(password.encode('utf-8')).digest()
 
@@ -79,6 +75,22 @@ def get_user_by_email(email: str):
     cur.close()
     conn.close()
     return user
+
+def get_user_by_id(user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+    return user
+
+def get_current_user_db(current_user_email: str = Depends(get_current_user)):
+    user = get_user_by_email(current_user_email)
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    return user
+
 
 def create_user(email: str, password_hash: str):
     conn = get_connection()
@@ -124,49 +136,105 @@ async def me(current_user_email: str = Depends(get_current_user)):
     return {"email": current_user_email}
 
 @app.get("/favorites")
-async def get_favorites(current_user_email: str = Depends(get_current_user)):
-    return {"items": fake_favorites_db.get(current_user_email, [])}
-
+async def get_favorites(current_user=Depends(get_current_user_db)):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT spoonacular_id, title, image, created_at
+        FROM favorites
+        WHERE user_id = %s
+        ORDER BY created_at DESC
+        """,
+        (current_user["id"],)
+    )
+    items = cur.fetchall()
+    cur.close()
+    conn.close()
+    return {"items": items}
 
 @app.post("/favorites")
-async def add_favorite(
-    recipe: FavoriteRecipeCreate,
-    current_user_email: str = Depends(get_current_user)
-):
-    user_favs = fake_favorites_db.setdefault(current_user_email, [])
-
-    # защита от дублей по spoonacular_id
-    if any(x["spoonacular_id"] == recipe.spoonacular_id for x in user_favs):
+async def add_favorite(recipe: FavoriteRecipeCreate, current_user=Depends(get_current_user_db)):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            """
+            INSERT INTO favorites (user_id, spoonacular_id, title, image)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (current_user["id"], recipe.spoonacular_id, recipe.title, recipe.image)
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        # unique
         raise HTTPException(status_code=400, detail="Recipe already in favorites")
+    finally:
+        cur.close()
+        conn.close()
 
-    user_favs.append(recipe.model_dump())
-    return {"message": "Added to favorites", "items": user_favs}
+    return {"message": "Added to favorites"}
 
 
 @app.delete("/favorites/{spoonacular_id}")
-async def remove_favorite(
-    spoonacular_id: int,
-    current_user_email: str = Depends(get_current_user)
-):
-    user_favs = fake_favorites_db.get(current_user_email, [])
-    new_list = [x for x in user_favs if x["spoonacular_id"] != spoonacular_id]
-    fake_favorites_db[current_user_email] = new_list
-    return {"message": "Removed from favorites", "items": new_list}
+async def remove_favorite(spoonacular_id: int, current_user=Depends(get_current_user_db)):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "DELETE FROM favorites WHERE user_id = %s AND spoonacular_id = %s",
+        (current_user["id"], spoonacular_id)
+    )
+    deleted = cur.rowcount
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    if deleted == 0:
+        raise HTTPException(status_code=404, detail="Favorite not found")
+
+    return {"message": "Removed from favorites"}
+
 
 @app.get("/history")
-async def get_history(current_user_email: str = Depends(get_current_user)):
-    return {"items": fake_history_db.get(current_user_email, [])}
+async def get_history(current_user=Depends(get_current_user_db)):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT id, ingredients, created_at
+        FROM search_history
+        WHERE user_id = %s
+        ORDER BY created_at DESC
+        LIMIT 50
+        """,
+        (current_user["id"],)
+    )
+    items = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    for x in items:
+        x["ingredients"] = [s for s in x["ingredients"].split(",") if s]
+
+    return {"items": items}
 
 
 @app.post("/history")
-async def add_history_item(
-    query: SearchQueryCreate,
-    current_user_email: str = Depends(get_current_user)
-):
-    user_history = fake_history_db.setdefault(current_user_email, [])
-    user_history.append({
-        "ingredients": query.ingredients,
-        "created_at": datetime.utcnow().isoformat() + "Z"
-    })
-    return {"message": "Saved to history", "items": user_history}
+async def add_history_item(query: SearchQueryCreate, current_user=Depends(get_current_user_db)):
+    ingredients_str = ",".join(query.ingredients)
 
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT INTO search_history (user_id, ingredients)
+        VALUES (%s, %s)
+        """,
+        (current_user["id"], ingredients_str)
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return {"message": "Saved to history"}
