@@ -15,3 +15,7 @@ class FavoriteRecipeCreate(BaseModel):
 
 class SearchQueryCreate(BaseModel):
     ingredients: list[str]
+
+class RecipeSearchRequest(BaseModel):
+    ingredients: list[str]
+    number: int = 10
