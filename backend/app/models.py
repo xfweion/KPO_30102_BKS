@@ -19,3 +19,6 @@ class SearchQueryCreate(BaseModel):
 class RecipeSearchRequest(BaseModel):
     ingredients: list[str]
     number: int = 10
+
+class FavoriteByIdCreate(BaseModel):
+    spoonacular_id: int

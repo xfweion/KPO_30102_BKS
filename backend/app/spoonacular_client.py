@@ -20,3 +20,15 @@ async def find_by_ingredients(ingredients: List[str], number: int = 10) -> list[
         resp = await client.get(url, params=params)
         resp.raise_for_status()
         return resp.json()
+
+async def get_recipe_information(spoonacular_id: int) -> dict[str, Any]:
+    url = f"{BASE_URL}/recipes/{spoonacular_id}/information"
+    params = {
+        "apiKey": SPOONACULAR_API_KEY,
+        "includeNutrition": False,
+    }
+
+    async with httpx.AsyncClient(timeout=20) as client:
+        resp = await client.get(url, params=params)
+        resp.raise_for_status()
+        return resp.json()
