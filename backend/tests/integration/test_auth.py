@@ -3,7 +3,7 @@ def test_register_and_login(client):
     password = "super-secret-password"
 
     r = client.post("/register", json={"email": email, "password": password})
-    assert r.status_code in (200, 400) #если уже зарегистрирован
+    assert r.status_code == 200
 
     r = client.post("/login", json={"email": email, "password": password})
     assert r.status_code == 200
