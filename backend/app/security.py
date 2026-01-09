@@ -10,8 +10,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def sha256_password(password: str) -> bytes:
-    return hashlib.sha256(password.encode("utf-8")).digest()
+def sha256_password(password: str) -> str:
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(sha256_password(password))
