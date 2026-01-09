@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1200, initial-scale=1" />
+  <title>Mix&Match — Поиск рецептов</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<body class="page page--main">
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <!-- Логотип -->
+    <a class="brand" href="/" aria-label="Mix&Match — главная">
+      <img class="brand__logo" src="/static/images/logorec.png" alt="Mix&Match" />
+    </a>
+
+    <!-- Навигация -->
+    <nav class="top-nav" aria-label="Навигация">
+      <a class="top-nav__item" href="/static/favorites.html">
+        <img class="top-nav__icon" src="/static/images/like.svg" alt="" />
+        <span class="top-nav__text">Избранное</span>
+      </a>
+
+      <a class="top-nav__item" href="/static/history.html">
+        <img class="top-nav__icon" src="/static/images/search.svg" alt="" />
+        <span class="top-nav__text">История<br>поиска</span>
+      </a>
+
+      <a class="top-nav__item" href="/static/login.html">
+        <img class="top-nav__icon" src="/static/images/human.svg" alt="" />
+        <span class="top-nav__text">Вход</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main class="site-main">
+  <div class="container">
+
+    <!-- Заголовок страницы -->
+    <section class="hero" aria-label="Поиск рецептов">
+      <img class="hero__decor" src="/static/images/frutties.png" alt="" aria-hidden="true" />
+      <h1 class="hero__title">
+        <span class="hero__title-line hero__title-line--accent">ПОИСК</span>
+        <span class="hero__title-line hero__title-line--main">РЕЦЕПТОВ</span>
+      </h1>
+    </section>
+
+    <!-- Форма поиска -->
+    <section class="panel panel--search" aria-label="Форма поиска">
+      <form class="search" action="#" method="get" autocomplete="off">
+        <label class="search__label" for="ingredient-input">Желаемые ингредиенты</label>
+        <div class="search__control" style="position: relative;">
+          <input
+            class="search__input"
+            id="ingredient-input"
+            name="ingredients"
+            type="text"
+            placeholder="Начните вводить, например: apple..."
+            autocomplete="off"
+          />
+          <ul id="suggestions-list" class="suggestions-list"></ul>
+        </div>
+
+        <div id="tags-container" class="tags-container"></div>
+
+        <button class="btn search__btn" type="submit">Искать!</button>
+      </form>
+    </section>
+
+    <!-- Панель с семьей -->
+    <section class="panel panel--info" id="about-panel" aria-label="Описание сервиса">
+      <!-- Скрепка -->
+      <img class="panel__pin" src="/static/images/pin.svg" alt="" aria-hidden="true" />
+      <div class="panel__content">
+        <span class="panel__title-main">
+          Хотите узнать список продуктов для приготовления желанного блюда?
+        </span>
+        <span class="panel__title-sub">
+          Сервис поиска рецептов по ингредиентам поможет вам!
+        </span>
+        <p class="panel__text">
+          Наш банк рецептов содержит большое количество самых разнообразных блюд с
+          просторов интернета. С помощью инструмента выбора нужных вам
+          ингредиентов <span class="panel__text-highlight">вы сможете найти то, что ищете!</span>
+        </p>
+      </div>
+
+      <div class="panel__illustration">
+        <img src="/static/images/family.png" alt="Иллюстрация семьи за столом" />
+      </div>
+    </section>
+    <section class="results is-hidden" id="results">
+        <!-- Показывать по -->
+        <div class="results-controls">
+            <span>Показывать по:</span>
+            <div class="results-limit" id="limit-controls">
+                <div class="limit-btn active" data-limit="10">10</div>
+                <div class="limit-btn" data-limit="20">20</div>
+                <div class="limit-btn" data-limit="30">30</div>
+            </div>
+        </div>
+
+        <div class="results__list" id="recipes-list"></div>
+
+        <!-- Пагинация -->
+        <div class="pagination" id="pagination">
+            <button class="pagination__arrow pagination__prev" disabled>&lt;</button>
+            <div class="pagination__pages" id="pagination-pages">
+            </div>
+            <button class="pagination__arrow pagination__next">&gt;</button>
+        </div>
+    </section>
+  </div>
+</main>
+
+<!--Футер-->
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+
+    <!--Лого-->
+    <div class="site-footer__brand">
+      <img class="site-footer__logo" src="/static/images/logorec.png" alt="Mix&Match" />
+    </div>
+
+    <!--Политех-->
+    <div class="site-footer__info">
+      <img class="site-footer__poly" src="/static/images/poly.png" alt="" aria-hidden="true" />
+      <div class="site-footer__text-block">
+        <span class="footer-line-top">Сайт изготовлен при поддержке</span>
+        <span class="footer-line-middle">СПбПУ им. Петра Великого</span>
+        <span class="footer-line-city">г. Санкт-Петербург</span>
+        <span class="footer-line-year">2025–2026</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!--Скрипт-->
+<script src="/static/js/script.js"></script>
+</body>
+</html>
