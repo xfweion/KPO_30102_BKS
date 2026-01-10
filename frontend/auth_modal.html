@@ -1,0 +1,59 @@
+<!--Модальное окно входа-->
+<div class="modal-overlay" id="modal-login">
+    <div class="auth-modal auth-modal--login">
+        <span class="modal-close" onclick="closeModal('modal-login')">&times;</span>
+
+        <div class="auth-content">
+            <img src="/static/images/logorec.png" alt="Mix&Match" class="auth-logo">
+            <h2 class="auth-title">
+                <span class="auth-title-top">
+                    <span class="word-enter">Войдите,</span>
+                    <span class="word-open">чтобы открыть</span>
+                </span>
+                <span class="auth-title--green">мир рецептов</span>
+            </h2>
+
+            <form class="auth-form" id="login-form">
+                <label class="auth-label">E-mail</label>
+                <input type="email" class="auth-input" name="email" required>
+                <label class="auth-label">Пароль</label>
+                <input type="password" class="auth-input" name="password" required>
+                <button type="submit" class="auth-btn auth-btn--yellow">Войти!</button>
+            </form>
+
+            <div class="auth-footer">
+                <span>Нет аккаунта?</span>
+                <span class="auth-arrow">›</span>
+                <button class="auth-link-btn auth-btn--pink" onclick="switchModal('modal-login', 'modal-signup')">Зарегистрироваться</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Модальное окно регистрации-->
+<div class="modal-overlay" id="modal-signup">
+    <div class="auth-modal auth-modal--signup">
+        <span class="modal-close" onclick="closeModal('modal-signup')">&times;</span>
+        <div class="auth-content">
+            <img src="/static/images/logorec.png" alt="Mix&Match" class="auth-logo">
+            <h2 class="auth-title">
+                <span class="auth-title-reg-top">Регистрация</span>
+                <span class="auth-title-reg-bottom">на сайте</span>
+            </h2>
+
+            <form class="auth-form" id="register-form">
+                <label class="auth-label">E-mail</label>
+                <input type="email" class="auth-input" name="email" required>
+                <label class="auth-label">Пароль</label>
+                <input type="password" class="auth-input" name="password" required>
+                <button type="submit" class="auth-btn auth-btn--pink">Зарегистрироваться!</button>
+            </form>
+
+            <div class="auth-footer">
+                <span>Уже есть аккаунт?</span>
+                <span class="auth-arrow">›</span>
+                <button class="auth-link-btn auth-btn--yellow" onclick="switchModal('modal-signup', 'modal-login')">Войти</button>
+            </div>
+        </div>
+    </div>
+</div>

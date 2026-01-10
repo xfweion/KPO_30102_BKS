@@ -62,6 +62,8 @@ img { display: block; max-width: 100%; height: auto; }
     align-items: flex-start;
     padding-top: 0px;
     margin-top: -35px;
+    position: relative;
+    z-index: 100;
 }
 
 .top-nav__item {
@@ -87,7 +89,7 @@ img { display: block; max-width: 100%; height: auto; }
     line-height: 1.2;
     text-align: center;
 }
-
+/* ГЛАВНАЯ СТРАНИЦА */
 /* Середина */
 .hero {
     position: relative;
@@ -622,3 +624,170 @@ img { display: block; max-width: 100%; height: auto; }
 
 .pagination__arrow:hover { color: #3A2301; }
 .pagination__arrow:disabled { opacity: 0.3; cursor: default; }
+
+/* СТРАНИЦЫ ВХОДА И РЕГИСТРАЦИИ */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: none; justify-content: center; align-items: center;
+    opacity: 0; transition: opacity 0.3s ease;
+}
+.modal-overlay.is-open { display: flex; opacity: 1; }
+
+.modal-close {
+    position: absolute; top: 0px; right: 47px;
+    font-size: 80px; color: #3A2301; cursor: pointer; z-index: 10;
+    line-height: 0.8; font-weight: bold;
+}
+
+/* Зеленая рамка */
+.auth-modal {
+    position: relative;
+    width: 920px;
+    height: 500px;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    display: block;
+}
+
+/* Белый блок */
+.auth-content {
+    background: #FDFBF7;
+    border-radius: 40px;
+    width: 800px;
+    height: 400px;
+    position: absolute;
+    top: 49%;
+    left: 49%;
+    transform: translate(-50%, -50%);
+    padding: 0 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.auth-modal--login { background-image: url('/static/images/loginbg.png'); }
+.auth-modal--signup { background-image: url('/static/images/signbg.png'); }
+
+/* Логотип */
+.auth-logo {
+    width: 160px;
+    margin: 5px auto 10px auto;
+    display: block;
+}
+
+/* Заголовок */
+.auth-title {
+    text-align: center;
+    margin-bottom: 5px;
+    line-height: 1.1;
+}
+
+.auth-title-top { display: block; color: #3A2301; }
+.auth-title-top .word-enter {
+    font-family: 'LT Wave', sans-serif; font-size: 26px; font-weight: normal;
+}
+.auth-title-top .word-open {
+    font-family: 'Cygre Book', sans-serif; font-size: 22px; margin-left: 5px; font-weight: normal;
+}
+.auth-title--green {
+    display: block;
+    font-family: 'Yiggivoo Unicode', serif;
+    font-size: 32px;
+    color: #7C8950;
+    margin-top: 0px;
+    font-weight: normal;
+}
+
+/* Форма */
+.auth-form {
+    display: flex; flex-direction: column;
+    gap: 5px;
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+.auth-label {
+    font-family: 'Cygre Book', sans-serif; font-size: 14px;
+    color: #3A2301; margin-left: 15px; margin-bottom: -3px;
+}
+
+.auth-input {
+    width: 100%; padding: 8px 15px;
+    border: 1px solid #D6D6D6; border-radius: 15px;
+    font-family: 'Cygre Book', sans-serif; font-size: 16px; outline: none;
+}
+
+/* Текст регистрации */
+.auth-title-reg-top {
+    font-family: 'LT Wave', sans-serif;
+    font-size: 32px;
+    color: #4A2D12;
+    font-weight: normal;
+    display: block;
+    margin-bottom: 0px;
+    margin-left: -80px;
+}
+
+.auth-title-reg-bottom {
+    font-family: 'Yiggivoo Unicode', serif;
+    font-size: 36px;
+    color: #7C8950;
+    display: block;
+    font-style: normal;
+    margin-top: -5px;
+    margin-left: 100px;
+}
+
+.auth-input:focus { border-color: #EBC968; }
+
+.auth-btn {
+    align-self: center;
+    margin-top: 5px;
+    padding: 8px 35px;
+    border-radius: 25px;
+    border: none;
+    font-family: 'Cygre Book', sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.auth-btn:hover { transform: scale(1.05); }
+
+.auth-btn--yellow {
+    background: #EBC968; color: #3A2301;
+    box-shadow: 0 3px 8px rgba(235, 201, 104, 0.4);
+}
+.auth-btn--pink {
+    background: #D8B5B5; color: #3A2301;
+    box-shadow: 0 3px 8px rgba(216, 181, 181, 0.4);
+}
+
+/* Футер модальных окон */
+.auth-footer {
+    display: flex; justify-content: center; align-items: center; gap: 8px;
+    font-family: 'Cygre Book', sans-serif;
+    font-size: 15px;
+    color: #3A2301;
+    margin-top: 5px;
+    white-space: nowrap;
+}
+
+.auth-link-btn {
+    background: #D8B5B5; color: #3A2301; border: none;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-family: 'Cygre Book', sans-serif; font-size: 14px; font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(216, 181, 181, 0.4);
+    transition: transform 0.2s;
+}
+.auth-link-btn:hover { transform: scale(1.05); }
+.auth-link-btn.auth-btn--yellow {
+    background: #EBC968;
+    box-shadow: 0 3px 8px rgba(235, 201, 104, 0.4);
+}
