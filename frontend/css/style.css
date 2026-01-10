@@ -791,3 +791,290 @@ img { display: block; max-width: 100%; height: auto; }
     background: #EBC968;
     box-shadow: 0 3px 8px rgba(235, 201, 104, 0.4);
 }
+
+/* СТРАНИЦА ИЗБРАННОГО */
+
+.page--favorites {
+    background: #F6F6F1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.page--favorites main {
+    flex: 1;
+}
+
+/* Заголовок и фрукты */
+.fav-header {
+    position: relative;
+    text-align: center;
+    height: 170px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0px;
+    margin-bottom: 20px;
+}
+
+.fav-decor {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 1000px;
+    width: 100%;
+    max-width: 1100px;
+    height: auto;
+    z-index: 1;
+    margin-right: 50px;
+}
+
+.fav-title {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    line-height: 0.9;
+}
+
+.fav-title__top {
+    font-family: 'Yiggivoo Unicode', serif;
+    font-size: 80px;
+    color: #604319;
+    margin-right: 150px;
+    font-weight: normal;
+}
+
+.fav-title__bottom {
+    font-family: 'Catallina', serif;
+    font-size: 90px;
+    color: #7C8950;
+    margin-left: 130px;
+    margin-top: 10px;
+    font-weight: normal;
+}
+
+/*Панель с брокколи*/
+.auth-required-panel {
+    background: linear-gradient(90deg, #D6E0B1 0%, #F5E7E4 50%, #D6E0B1 100%);
+    border-radius: 50px;
+    padding: 30px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 50px;
+    height: auto;
+    margin: 0 auto;
+    border: 1px solid rgba(168, 175, 142, 0.4);
+    box-shadow: 0 15px 30px rgba(78, 85, 45, 0.15);
+}
+
+.broccoli-img {
+    width: 180px;
+    height: auto;
+    margin-bottom: -30px;
+}
+
+.auth-msg {
+    font-family: 'Cygre Book', sans-serif;
+    font-size: 24px;
+    color: #3A2301;
+    margin-bottom: 5px;
+}
+
+.auth-msg-title {
+    font-family: 'Yiggivoo Unicode', serif;
+    font-size: 28px;
+    color: #3A2301;
+    font-style: italic;
+    margin: 0;
+}
+
+.auth-action {
+    display: flex;
+    align-items: baseline;
+    gap: 0px;
+}
+
+.auth-btn--yellow {
+    background-color: #EBC968;
+    color: #3A2301;
+    border: none;
+    padding: 8px 35px;
+    border-radius: 30px;
+    font-family: 'Cygre Book', sans-serif;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(235, 201, 104, 0.4);
+    margin-left: 20px;
+    position: relative;
+    top: -2px;
+}
+
+.page--favorites .top-nav__item.active .top-nav__icon {
+    filter: none;
+}
+
+.recipe-card__bookmark {
+    filter: none !important;
+}
+
+/* Карточки избранное */
+.fav-card {
+    background-color: #E6EAD6;
+    border-radius: 30px;
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    position: relative;
+    margin-bottom: 25px;
+    width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid rgba(168, 175, 142, 0.4);
+    box-shadow: 0 10px 20px rgba(78, 85, 45, 0.15);
+}
+
+.fav-card__img-wrap {
+    flex-shrink: 0;
+    width: 200px;
+    height: 150px;
+    background: transparent;
+    padding: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.fav-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 30px;
+}
+
+.fav-card__content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+}
+
+.fav-card__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.fav-card__title {
+    font-family: 'LT Wave', sans-serif !important;
+    font-weight: normal;
+    font-size: 22px;
+    color: #4A3B2A;
+    margin: 0;
+    text-decoration: none;
+    white-space: normal;
+    line-height: 1.2;
+    overflow: visible; /* Убираем обрезку */
+    text-overflow: clip;
+}
+
+/* Мета-данные */
+.fav-card__meta {
+    display: flex;
+    flex-direction: row !important;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 12px;
+}
+
+.meta-group.time-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.meta-group.time-group img {
+    width: 24px !important;
+    height: auto;
+    opacity: 0.7;
+}
+
+.meta-time {
+    font-family: 'LT Wave', sans-serif !important;
+    font-weight: normal;
+    font-size: 16px;
+    color: #4A2D12;
+}
+
+/* Контейнер тегов */
+.meta-tags-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.meta-tag {
+    font-family: 'LT Wave', sans-serif !important;
+    font-weight: normal;
+    padding: 4px 15px;
+    border-radius: 12px;
+    font-size: 15px;
+}
+.meta-tag.pink { background-color: #F8D3D6; color: #4A3B2A; }
+.meta-tag.green { background-color: #A9B18F; color: #4A3B2A; }
+
+/* Ингредиенты */
+.fav-card__ingredients {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ing-pill {
+    font-family: 'Cygre Book', sans-serif !important; /* 2. Шрифт */
+    font-weight: normal;
+    background: #fff;
+    border: 1px solid #D8DCC8;
+    color: #4A2D12;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.fav-bookmark-btn {
+    position: absolute;
+    top: 25px !important;
+    right: 30px !important;
+    width: 32px !important;
+    height: auto;
+    cursor: pointer;
+    filter: none !important;
+}
+
+.is-hidden { display: none !important; }
+
+.fav-controls-bar {
+    max-width: 1000px;
+    margin: 0 auto 30px;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 15px;
+    padding-left: 20px;
+}
+.fav-label {
+    font-size: 18px;
+    color: #4A3B2A;
+    font-family: 'Cygre Book', sans-serif;
+    font-weight: bold;
+}
+.search-limits { display: flex; gap: 10px; }

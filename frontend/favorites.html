@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1200, initial-scale=1">
+  <title>Mix&Match — Избранное</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="page page--favorites">
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href="/"><img class="brand__logo" src="/static/images/logorec.png" alt="Mix&Match"></a>
+    <nav class="top-nav">
+      <a class="top-nav__item active" href="/static/favorites.html">
+    <img class="top-nav__icon" src="/static/images/bookmark_filled.svg" alt="">
+    <span class="top-nav__text">Избранное</span>
+      </a>
+      <a class="top-nav__item" href="/static/history.html">
+        <img class="top-nav__icon" src="/static/images/search.svg" alt="">
+        <span class="top-nav__text">История<br>поиска</span>
+      </a>
+      <a class="top-nav__item" href="#" onclick="openModal('modal-login'); return false;">
+        <img class="top-nav__icon" src="/static/images/human.svg" alt="">
+        <span class="top-nav__text">Вход</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main class="container page-content">
+
+    <!-- Заголовок+фрукты -->
+    <div class="fav-header">
+        <img src="/static/images/fruttieslike.png" alt="" class="fav-decor">
+        <h1 class="fav-title">
+            <span class="fav-title__top">Избранные</span>
+            <span class="fav-title__bottom">РЕЦЕПТЫ</span>
+        </h1>
+    </div>
+
+    <!--Панель брокколи-->
+    <div id="fav-guest-block" class="auth-required-panel is-hidden">
+        <div class="broccoli-wrap">
+            <img src="/static/images/sadbroccoli.png" alt="Грустный брокколи" class="broccoli-img">
+        </div>
+        <div class="auth-required-text">
+            <p class="auth-msg">К сожалению, пока не доступны</p>
+            <div class="auth-action">
+                <span class="auth-msg-title">Требуется</span>
+                <button class="auth-btn auth-btn--yellow" onclick="openModal('modal-login')">Войти</button>
+            </div>
+        </div>
+    </div>
+    <div id="fav-user-block" class="is-hidden">
+    <!--Показывать по-->
+    <div class="fav-controls-bar">
+        <span class="fav-label">Показывать по:</span>
+        <div class="search-limits">
+            <button class="limit-btn active" data-limit="10">10</button>
+            <button class="limit-btn" data-limit="20">20</button>
+            <button class="limit-btn" data-limit="30">30</button>
+        </div>
+    </div>
+    <div id="favorites-container"></div>
+    <div id="fav-empty-msg" class="is-hidden" style="text-align:center; padding: 40px; color: #6B5E4B;">
+        У вас пока нет избранных рецептов.
+    </div>
+    <!--Пагинация-->
+    <div class="pagination" id="fav-pagination" style="display:none;">
+        <button class="pagination__arrow fav-pagination__prev" disabled>&lt;</button>
+        <div class="pagination__pages" id="fav-pagination-pages"></div>
+        <button class="pagination__arrow fav-pagination__next">&gt;</button>
+    </div>
+</div>
+</main>
+
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <div class="site-footer__brand">
+      <img class="site-footer__logo" src="/static/images/logorec.png" alt="Mix&Match" />
+    </div>
+    <div class="site-footer__info">
+      <img class="site-footer__poly" src="/static/images/poly.png" alt="" />
+      <div class="site-footer__text-block">
+        <span class="footer-line-top">Сайт изготовлен при поддержке</span>
+        <span class="footer-line-middle">СПбПУ им. Петра Великого</span>
+        <span class="footer-line-city">г. Санкт-Петербург</span>
+        <span class="footer-line-year">2025–2026</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="/static/js/script.js"></script>
+
+<!--ШАБЛОН КАРТОЧКИ ИЗБРАННОГО-->
+<template id="fav-card-template">
+    <div class="recipe-card fav-card">
+        <div class="fav-card__image-block">
+            <div class="fav-card__img-wrap">
+                <img src="" alt="" class="fav-img">
+            </div>
+        </div>
+        <div class="fav-card__content">
+            <div class="fav-card__header">
+                <img src="/static/images/fork.svg" alt="" class="fav-icon-fork">
+                <h3 class="fav-card__title"></h3>
+            </div>
+        <div class="fav-card__meta">
+            <div class="meta-group time-group">
+                <img src="/static/images/clock.svg" alt="">
+                <span class="meta-time">...</span>
+            </div>
+            <div class="meta-tags-container">
+                <span class="meta-loading" style="font-size:12px; color:#999;">Загрузка...</span>
+            </div>
+        </div>
+        <div class="fav-card__ingredients"></div>
+        </div>
+        <div class="fav-card__action">
+             <img class="fav-bookmark-btn" src="/static/images/bookmark_filled.svg"
+                  title="Удалить из избранного">
+        </div>
+    </div>
+</template>
+
+<script src="/static/js/script.js"></script>
+</body>
+</html>

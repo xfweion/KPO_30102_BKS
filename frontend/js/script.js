@@ -11,13 +11,136 @@ document.addEventListener('DOMContentLoaded', () => {
     const paginationPages = document.getElementById('pagination-pages');
     const btnPrev = document.querySelector('.pagination__prev');
     const btnNext = document.querySelector('.pagination__next');
+    const favPagination = document.getElementById('fav-pagination');
+    const favPaginationPages = document.getElementById('fav-pagination-pages');
+    const favBtnPrev = document.querySelector('.fav-pagination__prev');
+    const favBtnNext = document.querySelector('.fav-pagination__next');
+
+    let allFavorites = [];
+    let currentFavPage = 1;
+    let currentFavLimit = 10;
+
+    // Элементы страницы избранного
+    const favGuestBlock = document.getElementById('fav-guest-block');
+    const favUserBlock = document.getElementById('fav-user-block');
+    const favContainer = document.getElementById('favorites-container');
+    const favEmptyMsg = document.getElementById('fav-empty-msg');
 
     let selectedIngredients = [];
     let allRecipes = [];
     let currentLimit = 10;
     let currentPage = 1;
 
-    //Теги и поиск
+    let userFavoritesIds = new Set();
+    const token = localStorage.getItem('access_token');
+    loadAuthModals();
+
+    if (token) {
+        loadUserFavoritesIds();
+    }
+
+    if (favGuestBlock && favUserBlock) {
+        if (!token) {
+            favGuestBlock.classList.remove('is-hidden');
+        } else {
+            favUserBlock.classList.remove('is-hidden');
+            loadFavoritesList();
+        }
+    }
+
+    async function loadUserFavoritesIds() {
+        try {
+            const res = await fetch('/favorites', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const data = await res.json();
+                let favs = [];
+                if (Array.isArray(data)) {
+                    favs = data;
+                } else if (data && (data.items || data.results)) {
+                    favs = data.items || data.results;
+                }
+                userFavoritesIds = new Set(favs.map(f => f.spoonacular_id || f.id));
+            }
+        } catch (e) {
+            console.error("Не удалось загрузить ID избранного", e);
+            userFavoritesIds = new Set();
+        }
+    }
+
+    async function loadFavoritesList() {
+        try {
+            const response = await fetch('/favorites', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.status === 401) {
+                localStorage.removeItem('access_token');
+                window.location.reload();
+                return;
+            }
+            const data = await response.json();
+
+            let favorites = [];
+            if (Array.isArray(data)) {
+                favorites = data;
+            } else if (data && (data.items || data.results)) {
+                favorites = data.items || data.results;
+            }
+            allFavorites = favorites;
+            currentFavPage = 1;
+            renderFavPage();
+        } catch (e) {
+            console.error('Ошибка загрузки списка избранного:', e);
+            if (favContainer) favContainer.innerHTML = '<p style="text-align:center">Ошибка загрузки</p>';
+        }
+    }
+
+    function renderFavPage() {
+        if (!favContainer) return;
+        const start = (currentFavPage - 1) * currentFavLimit;
+        const end = start + currentFavLimit;
+        const pageItems = allFavorites.slice(start, end);
+        favContainer.innerHTML = '';
+        pageItems.forEach(renderFavoriteCard);
+        updateFavPagination();
+    }
+
+    function updateFavPagination() {
+        if (!favPagination || !favPaginationPages) return;
+        const totalPages = Math.ceil(allFavorites.length / currentFavLimit);
+        if (totalPages <= 1) {
+            favPagination.style.display = 'none';
+            return;
+        }
+        favPagination.style.display = 'flex';
+        favPaginationPages.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'page-btn' + (i === currentFavPage ? ' active' : '');
+            btn.textContent = i;
+            btn.addEventListener('click', () => {
+                currentFavPage = i;
+                renderFavPage();
+            });
+            favPaginationPages.appendChild(btn);
+        }
+        if (favBtnPrev) {
+            favBtnPrev.disabled = currentFavPage === 1;
+            favBtnPrev.onclick = () => {
+                if (currentFavPage > 1) {
+                    currentFavPage--;
+                    renderFavPage();
+                }
+            };
+        }
+        if (favBtnNext) {
+            favBtnNext.disabled = currentFavPage === totalPages;
+            favBtnNext.onclick = () => {
+                if (currentFavPage < totalPages) {
+                    currentFavPage++;
+                    renderFavPage();
+                }
+            };
+        }
+    }
+
     function addTag(name) {
         if (selectedIngredients.includes(name)) return;
         selectedIngredients.push(name);
@@ -33,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderTags() {
+        if (!tagsContainer) return;
         tagsContainer.innerHTML = '';
         selectedIngredients.forEach(ing => {
             const chip = document.createElement('div');
@@ -79,7 +203,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    //Поиск рецептов
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -89,8 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             recipesList.innerHTML = '<p style="text-align:center; padding: 20px;">Загружаем вкусняшки...</p>';
             resultsContainer.classList.remove('is-hidden');
-            aboutPanel.style.display = 'none';
-            pagination.style.display = 'none';
+            if (aboutPanel) aboutPanel.style.display = 'none';
+            if (pagination) pagination.style.display = 'none';
 
             try {
                 const response = await fetch(`/search/recipes?ingredients=${ingredientsStr}&number=100`);
@@ -128,6 +251,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return `<div class="ingredient-tag ${cssClass}">${ing.name}</div>`;
             }).join('');
 
+            const isFav = userFavoritesIds.has(recipe.id);
+            const bookmarkIcon = isFav ? 'bookmark_filled.svg' : 'bookmark.svg';
+
             const card = document.createElement('div');
             card.className = 'recipe-card';
             card.innerHTML = `
@@ -139,7 +265,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="recipe-ingredients">${ingTags}</div>
                 </div>
-                <img class="recipe-card__bookmark" src="/static/images/bookmark.svg" alt="">
+                <img class="recipe-card__bookmark"
+                     src="/static/images/${bookmarkIcon}"
+                     alt="В избранное"
+                     style="cursor: pointer;"
+                     onclick="toggleFavorite(this, ${recipe.id})">
             `;
             recipesList.appendChild(card);
         });
@@ -148,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updatePaginationUI() {
+        if (!pagination) return;
         pagination.style.display = 'flex';
         const totalPages = Math.ceil(allRecipes.length / currentLimit);
 
@@ -173,24 +304,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             paginationPages.appendChild(btn);
         }
-
         if (btnPrev) btnPrev.disabled = currentPage === 1;
         if (btnNext) btnNext.disabled = currentPage === totalPages;
     }
-
     if (btnPrev) {
         btnPrev.addEventListener('click', () => {
             if (currentPage > 1) { currentPage--; renderPage(); }
         });
     }
-
     if (btnNext) {
         btnNext.addEventListener('click', () => {
             const totalPages = Math.ceil(allRecipes.length / currentLimit);
             if (currentPage < totalPages) { currentPage++; renderPage(); }
         });
     }
-
     const limitBtns = document.querySelectorAll('.limit-btn');
     limitBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -202,40 +329,26 @@ document.addEventListener('DOMContentLoaded', () => {
             renderPage();
         });
     });
-
-    //Загрузка модальных окон
     async function loadAuthModals() {
         try {
             const response = await fetch('/static/auth_modal.html');
-            if (!response.ok) {
-                console.error(`ОШИБКА ${response.status}: Файл /static/auth_modal.html не найден!`);
-                return;
-            }
+            if (!response.ok) return;
             const html = await response.text();
             document.body.insertAdjacentHTML('beforeend', html);
-            console.log("Модалки успешно загружены!");
-
             updateAuthUI();
-
         } catch (e) {
             console.error("Ошибка сети или JS при загрузке модалок:", e);
         }
     }
-    loadAuthModals();
 });
 
-
-//Управление модальными окнами
 function openModal(id) {
     const modal = document.getElementById(id);
     if (modal) {
         modal.classList.add('is-open');
         document.body.style.overflow = 'hidden';
-    } else {
-        console.error('Модалка не найдена: ' + id);
     }
 }
-
 function closeModal(id) {
     const modal = document.getElementById(id);
     if (modal) {
@@ -243,18 +356,11 @@ function closeModal(id) {
         document.body.style.overflow = '';
     }
 }
-
 function switchModal(currentId, targetId) {
     closeModal(currentId);
     openModal(targetId);
 }
 
-window.openModal = openModal;
-window.closeModal = closeModal;
-window.switchModal = switchModal;
-
-
-//Обновление интерфейса при авторизации
 function updateAuthUI() {
     const token = localStorage.getItem('access_token');
     const navLinks = document.querySelectorAll('.top-nav__item');
@@ -265,24 +371,21 @@ function updateAuthUI() {
             authBtn = link;
         }
     });
-
     if (authBtn) {
         const textSpan = authBtn.querySelector('.top-nav__text');
-
         if (token) {
             if (textSpan) textSpan.textContent = "Выход";
             else authBtn.textContent = "Выход";
-
             authBtn.onclick = (e) => {
                 e.preventDefault();
                 localStorage.removeItem('access_token');
                 alert("Вы вышли из системы");
                 updateAuthUI();
+                if (location.pathname.includes('favorites.html')) location.reload();
             };
         } else {
             if (textSpan) textSpan.textContent = "Вход";
             else authBtn.textContent = "Вход";
-
             authBtn.onclick = (e) => {
                 e.preventDefault();
                 openModal('modal-login');
@@ -291,11 +394,61 @@ function updateAuthUI() {
     }
 }
 
+window.toggleFavorite = async function(btn, recipeId) {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        openModal('modal-login');
+        return;
+    }
+    const isFilled = btn.src.includes('bookmark_filled.svg');
+    try {
+        if (isFilled) {
+            const res = await fetch(`/favorites/${recipeId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                btn.src = '/static/images/bookmark.svg';
+                if (btn.closest('.fav-card')) {
+                    btn.closest('.fav-card').remove();
+                }
+            }
+        } else {
+            const res = await fetch('/favorites/', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ spoonacular_id: recipeId })
+            });
+            if (res.ok) {
+                btn.src = '/static/images/bookmark_filled.svg';
+            }
+        }
+    } catch (e) {
+        console.error("Ошибка избранного:", e);
+    }
+};
+
+window.removeFromFavorites = async function(id, card) {
+    if (!confirm('Удалить из избранного?')) return;
+    const token = localStorage.getItem('access_token');
+    try {
+        const res = await fetch(`/favorites/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            card.remove();
+        }
+    } catch(e) { console.error(e); }
+};
+
 
 document.addEventListener('submit', async (e) => {
     if (e.target && e.target.id === 'login-form') {
         e.preventDefault();
-
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
 
@@ -307,24 +460,20 @@ document.addEventListener('submit', async (e) => {
             });
 
             const result = await response.json();
-
             if (response.ok) {
                 localStorage.setItem('access_token', result.access_token);
                 alert("Вы успешно вошли!");
                 closeModal('modal-login');
                 updateAuthUI();
+                location.reload();
             } else {
                 alert(result.detail || "Ошибка входа");
             }
-        } catch (err) {
-            console.error(err);
-            alert("Ошибка сети");
-        }
+        } catch (err) { console.error(err); alert("Ошибка сети"); }
     }
 
     if (e.target && e.target.id === 'register-form') {
         e.preventDefault();
-
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
 
@@ -336,16 +485,103 @@ document.addEventListener('submit', async (e) => {
             });
 
             const result = await response.json();
-
             if (response.ok) {
                 alert("Регистрация успешна! Теперь войдите.");
                 switchModal('modal-signup', 'modal-login');
             } else {
                 alert(result.detail || "Ошибка регистрации");
             }
-        } catch (err) {
-            console.error(err);
-            alert("Ошибка сети");
-        }
+        } catch (err) { console.error(err); alert("Ошибка сети"); }
     }
 });
+
+window.renderFavoriteCard = function(recipe) {
+    const template = document.getElementById('fav-card-template');
+    if (!template) {
+        console.error("Шаблон #fav-card-template не найден!");
+        return;
+    }
+    const clone = template.content.cloneNode(true);
+    const card = clone.querySelector('.fav-card');
+    const recId = recipe.spoonacular_id || recipe.id;
+    card.dataset.id = recId;
+
+    const img = card.querySelector('.fav-img');
+    if (img) {
+        img.src = recipe.image || '/static/images/no-image.png';
+        img.alt = recipe.title;
+    }
+
+    const title = card.querySelector('.fav-card__title');
+    if (title) {
+        title.textContent = recipe.title;
+        title.title = recipe.title;
+    }
+
+    const deleteBtn = card.querySelector('.fav-bookmark-btn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => removeFromFavorites(recId, card));
+    }
+
+    const container = document.getElementById('favorites-container');
+    if (container) container.appendChild(card);
+    fetchRecipeDetails(recId, card);
+}
+
+async function getRecipeDetailsCached(recipeId) {
+    const cacheKey = 'recipe_cache_' + recipeId;
+    const cachedData = localStorage.getItem(cacheKey);
+    if (cachedData) {
+        return JSON.parse(cachedData);
+    }
+    try {
+        const response = await fetch(`/recipes/${recipeId}`);
+        if (!response.ok) throw new Error('Ошибка загрузки рецепта');
+        const data = await response.json();
+        localStorage.setItem(cacheKey, JSON.stringify(data));
+        return data;
+    } catch (e) {
+        console.error(e);
+        return null;
+    }
+}
+
+window.fetchRecipeDetails = async function(id, cardElement) {
+    const details = await getRecipeDetailsCached(id);
+    if (!details) return;
+    const timeElem = cardElement.querySelector('.meta-time');
+    if (timeElem) timeElem.textContent = details.readyInMinutes ? `${details.readyInMinutes} мин.` : '—';
+    const tagsContainer = cardElement.querySelector('.meta-tags-container');
+    const loadingText = cardElement.querySelector('.meta-loading');
+    if (loadingText) loadingText.remove();
+    if (tagsContainer) {
+        tagsContainer.innerHTML = '';
+        if (details.dishTypes && details.dishTypes.length > 0) {
+            const tag = document.createElement('div');
+            tag.className = 'meta-tag pink';
+            tag.textContent = details.dishTypes[0];
+            tagsContainer.appendChild(tag);
+        }
+        if (details.cuisines && details.cuisines.length > 0) {
+            const tag = document.createElement('div');
+            tag.className = 'meta-tag green';
+            tag.textContent = details.cuisines[0];
+            tagsContainer.appendChild(tag);
+        }
+    }
+
+    const ingContainer = cardElement.querySelector('.fav-card__ingredients');
+    if (ingContainer && details.extendedIngredients) {
+        ingContainer.innerHTML = '';
+        details.extendedIngredients.slice(0, 4).forEach(ing => {
+            const span = document.createElement('span');
+            span.className = 'ing-pill';
+            span.textContent = ing.nameClean || ing.name;
+            ingContainer.appendChild(span);
+        });
+    }
+};
+
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.switchModal = switchModal;
