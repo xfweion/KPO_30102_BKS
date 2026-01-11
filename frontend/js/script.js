@@ -1,3 +1,7 @@
+let userFavoritesIds = new Set();
+let currentIngIndex = 0;
+const ING_VISIBLE_COUNT = 5;
+
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('ingredient-input');
     const suggestionsList = document.getElementById('suggestions-list');
@@ -15,22 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const favPaginationPages = document.getElementById('fav-pagination-pages');
     const favBtnPrev = document.querySelector('.fav-pagination__prev');
     const favBtnNext = document.querySelector('.fav-pagination__next');
-
-    let allFavorites = [];
-    let currentFavPage = 1;
-    let currentFavLimit = 10;
-
-    // Элементы страницы избранного
     const favGuestBlock = document.getElementById('fav-guest-block');
     const favUserBlock = document.getElementById('fav-user-block');
     const favContainer = document.getElementById('favorites-container');
-    const favEmptyMsg = document.getElementById('fav-empty-msg');
-
-    let selectedIngredients = [];
-    let allRecipes = [];
-    let currentLimit = 10;
-    let currentPage = 1;
-    let userFavoritesIds = new Set();
 
     // Элементы страницы истории
     const historyGuestBlock = document.getElementById('history-guest-block');
@@ -40,6 +31,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyPaginationPages = document.getElementById('history-pagination-pages');
     const historyBtnPrev = document.querySelector('.history-pagination__prev');
     const historyBtnNext = document.querySelector('.history-pagination__next');
+
+    let selectedIngredients = [];
+    let allRecipes = [];
+    let currentLimit = 10;
+    let currentPage = 1;
+
+    let allFavorites = [];
+    let currentFavPage = 1;
+    let currentFavLimit = 10;
 
     let allHistory = [];
     let historyCurrentPage = 1;
@@ -66,23 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
     }
 
-    function renderHistoryPage() {
-        if (!historyList) return;
-        historyList.innerHTML = '';
-        const start = (historyCurrentPage - 1) * historyCurrentLimit;
-        const end = start + historyCurrentLimit;
-        const pageItems = allHistory.slice(start, end);
-
-        if (pageItems.length === 0) {
-            historyList.innerHTML = '<p style="text-align:center; padding:40px; color:#6B5E4B;">История пуста</p>';
-            if (historyPagination) historyPagination.style.display = 'none';
-            return;
-        }
-
-        pageItems.forEach(item => window.renderHistoryCard(item));
-        updateHistoryPagination();
-    }
-
     const token = localStorage.getItem('access_token');
     loadAuthModals();
 
@@ -104,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
             historyGuestBlock.classList.remove('is-hidden');
         } else {
             historyUserBlock.classList.remove('is-hidden');
-            loadHistory(); // грузим историю
+            loadHistory();
         }
     }
 
@@ -124,6 +107,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     favs = data.items || data.results;
                 }
                 userFavoritesIds = new Set(favs.map(f => f.spoonacular_id || f.id));
+
+                const bm = document.getElementById('recipe-bookmark');
+                if(bm && window.location.pathname.includes('recipe_detail.html')) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const rId = parseInt(urlParams.get('id'));
+                    if(rId && userFavoritesIds.has(rId)) {
+                        bm.src = '/static/images/bookmark_filled.svg';
+                    }
+                }
             }
         } catch (e) {
             console.error("Не удалось загрузить ID избранного", e);
@@ -220,26 +212,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 chipsContainer.appendChild(chip);
             });
         }
+        const clickHandler = () => {
+            const query = item.ingredients.join(',');
+            window.location.href = `/?ingredients=${encodeURIComponent(query)}`;
+        };
+
         const returnIcon = card.querySelector('.history-item__label img');
         if (returnIcon) {
             returnIcon.style.cursor = 'pointer';
-            returnIcon.onclick = () => {
-                const query = item.ingredients.join(',');
-                window.location.href = `/?ingredients=${encodeURIComponent(query)}`;
-            };
+            returnIcon.onclick = clickHandler;
         }
         const labelText = card.querySelector('.history-item__label span');
         if (labelText) {
             labelText.style.cursor = 'pointer';
-            labelText.onclick = () => {
-                const query = item.ingredients.join(',');
-                window.location.href = `/?ingredients=${encodeURIComponent(query)}`;
-            };
+            labelText.onclick = clickHandler;
         }
         historyList.appendChild(clone);
     };
 
-    // Пагинация
+    function renderHistoryPage() {
+        if (!historyList) return;
+        historyList.innerHTML = '';
+        const start = (historyCurrentPage - 1) * historyCurrentLimit;
+        const end = start + historyCurrentLimit;
+        const pageItems = allHistory.slice(start, end);
+
+        if (pageItems.length === 0) {
+            historyList.innerHTML = '<p style="text-align:center; padding:40px; color:#6B5E4B;">История пуста</p>';
+            if (historyPagination) historyPagination.style.display = 'none';
+            return;
+        }
+
+        pageItems.forEach(item => window.renderHistoryCard(item));
+        updateHistoryPagination();
+    }
+
     function updateHistoryPagination() {
         if (!historyPagination || !historyPaginationPages) return;
         const totalPages = Math.ceil(allHistory.length / historyCurrentLimit);
@@ -368,14 +375,16 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             if (selectedIngredients.length === 0) { alert("Выберите ингредиенты!"); return; }
             const searchItem = {
-            id: Date.now(),
-            ingredients: [...selectedIngredients],
-            timestamp: new Date().toISOString()
+                id: Date.now(),
+                ingredients: [...selectedIngredients],
+                timestamp: new Date().toISOString()
             };
             let history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
             history.unshift(searchItem);
             history = history.slice(0, 200);
             localStorage.setItem('searchHistory', JSON.stringify(history));
+
+            sessionStorage.setItem('lastSearchIngredients', JSON.stringify(selectedIngredients));
 
             const ingredientsStr = selectedIngredients.join(',');
 
@@ -430,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="recipe-card__content">
                     <div class="recipe-card__header">
                         <img class="recipe-card__icon" src="/static/images/fork.svg" alt="">
-                        <a href="#" class="recipe-card__title">${recipe.title}</a>
+                        <a href="/static/recipe_detail.html?id=${recipe.id}" class="recipe-card__title">${recipe.title}</a>
                     </div>
                     <div class="recipe-ingredients">${ingTags}</div>
                 </div>
@@ -476,6 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnPrev) btnPrev.disabled = currentPage === 1;
         if (btnNext) btnNext.disabled = currentPage === totalPages;
     }
+
     if (btnPrev) {
         btnPrev.addEventListener('click', () => {
             if (currentPage > 1) { currentPage--; renderPage(); }
@@ -488,8 +498,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     const limitBtns = document.querySelectorAll('.limit-btn');
-
     const historyLimitBtns = document.querySelectorAll('#history-limit-controls .limit-btn');
+    const favLimitBtns = document.querySelectorAll('.fav-limits-buttons .limit-btn, .fav-controls-bar .limit-btn');
+    const mainLimitBtns = document.querySelectorAll('#limit-controls .limit-btn');
+
     historyLimitBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             historyLimitBtns.forEach(b => b.classList.remove('active'));
@@ -500,28 +512,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    const favLimitBtns = document.querySelectorAll('.results-limit .limit-btn, .fav-limits-buttons .limit-btn, .fav-controls-bar .limit-btn');
-
     favLimitBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             favLimitBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-
             currentFavLimit = parseInt(btn.dataset.limit);
             currentFavPage = 1;
             renderFavPage();
         });
     });
 
-    const mainLimitBtns = document.querySelectorAll('.limit-btn:not(#history-limit-controls .limit-btn):not(.fav-controls-bar .limit-btn)');
     mainLimitBtns.forEach(btn => {
-        if (btn.closest('#history-limit-controls') || btn.closest('.fav-controls-bar') || btn.closest('.results-limit')) return;
         btn.addEventListener('click', () => {
-             document.querySelectorAll('.limit-btn').forEach(b => {
-                 if (!b.closest('#history-limit-controls') && !b.closest('.fav-controls-bar')) {
-                     b.classList.remove('active');
-                 }
-             });
+             mainLimitBtns.forEach(b => b.classList.remove('active'));
              btn.classList.add('active');
              currentLimit = parseInt(btn.dataset.limit);
              currentPage = 1;
@@ -529,16 +532,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    limitBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            limitBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            currentLimit = parseInt(btn.dataset.limit);
-            currentPage = 1;
-            renderPage();
-        });
-    });
     async function loadAuthModals() {
         try {
             const response = await fetch('/static/auth_modal.html');
@@ -550,6 +543,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Ошибка сети или JS при загрузке модалок:", e);
         }
     }
+    window.loadAuthModals = loadAuthModals;
+    window.loadUserFavoritesIds = loadUserFavoritesIds;
 });
 
 function openModal(id) {
@@ -611,9 +606,10 @@ window.toggleFavorite = async function(btn, recipeId) {
         return;
     }
     const isFilled = btn.src.includes('bookmark_filled.svg');
+    const idNum = parseInt(recipeId);
     try {
         if (isFilled) {
-            const res = await fetch(`/favorites/${recipeId}`, {
+            const res = await fetch(`/favorites/${idNum}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -622,6 +618,9 @@ window.toggleFavorite = async function(btn, recipeId) {
                 if (btn.closest('.fav-card')) {
                     btn.closest('.fav-card').remove();
                 }
+                userFavoritesIds.delete(idNum);
+            } else {
+                console.error('Ошибка удаления из избранного', res.status);
             }
         } else {
             const res = await fetch('/favorites/', {
@@ -630,14 +629,17 @@ window.toggleFavorite = async function(btn, recipeId) {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ spoonacular_id: recipeId })
+                body: JSON.stringify({ spoonacular_id: idNum })
             });
             if (res.ok) {
                 btn.src = '/static/images/bookmark_filled.svg';
+                userFavoritesIds.add(idNum);
+            } else {
+                 console.error('Ошибка добавления в избранное', res.status);
             }
         }
     } catch (e) {
-        console.error("Ошибка избранного:", e);
+        console.error("Ошибка сети при избранном:", e);
     }
 };
 
@@ -651,10 +653,10 @@ window.removeFromFavorites = async function(id, card) {
         });
         if (res.ok) {
             card.remove();
+            userFavoritesIds.delete(parseInt(id));
         }
     } catch(e) { console.error(e); }
 };
-
 
 document.addEventListener('submit', async (e) => {
     if (e.target && e.target.id === 'login-form') {
@@ -708,7 +710,6 @@ document.addEventListener('submit', async (e) => {
 window.renderFavoriteCard = function(recipe) {
     const template = document.getElementById('fav-card-template');
     if (!template) {
-        console.error("Шаблон #fav-card-template не найден!");
         return;
     }
     const clone = template.content.cloneNode(true);
@@ -726,6 +727,7 @@ window.renderFavoriteCard = function(recipe) {
     if (title) {
         title.textContent = recipe.title;
         title.title = recipe.title;
+        title.href = `/static/recipe_detail.html?id=${recId}`;
     }
 
     const deleteBtn = card.querySelector('.fav-bookmark-btn');
@@ -766,18 +768,20 @@ window.fetchRecipeDetails = async function(id, cardElement) {
     if (loadingText) loadingText.remove();
     if (tagsContainer) {
         tagsContainer.innerHTML = '';
-        if (details.dishTypes && details.dishTypes.length > 0) {
-            const tag = document.createElement('div');
-            tag.className = 'meta-tag pink';
-            tag.textContent = details.dishTypes[0];
-            tagsContainer.appendChild(tag);
-        }
-        if (details.cuisines && details.cuisines.length > 0) {
-            const tag = document.createElement('div');
-            tag.className = 'meta-tag green';
-            tag.textContent = details.cuisines[0];
-            tagsContainer.appendChild(tag);
-        }
+        const dishType = (details.dishTypes && details.dishTypes.length > 0)
+            ? details.dishTypes[0]
+            : 'dish';
+        const tag1 = document.createElement('div');
+        tag1.className = 'meta-tag pink';
+        tag1.textContent = dishType;
+        tagsContainer.appendChild(tag1);
+        const cuisine = (details.cuisines && details.cuisines.length > 0)
+            ? details.cuisines[0]
+            : 'universal';
+        const tag2 = document.createElement('div');
+        tag2.className = 'meta-tag green';
+        tag2.textContent = cuisine;
+        tagsContainer.appendChild(tag2);
     }
 
     const ingContainer = cardElement.querySelector('.fav-card__ingredients');
@@ -795,3 +799,173 @@ window.fetchRecipeDetails = async function(id, cardElement) {
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.switchModal = switchModal;
+
+if (window.location.pathname.includes('recipe_detail.html')) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const recipeId = urlParams.get('id');
+
+    if (recipeId) {
+        loadRecipeFull(recipeId);
+    } else {
+        document.getElementById('recipe-loading').textContent = 'ID рецепта не указан.';
+    }
+}
+
+async function loadRecipeFull(id) {
+    try {
+        let details = await getRecipeDetailsCached(id);
+        if (!details) {
+            const res = await fetch(`/recipes/${id}`);
+            if (!res.ok) throw new Error('Err');
+            details = await res.json();
+        }
+        renderRecipePage(details);
+
+        const rId = parseInt(id);
+        const bookmark = document.getElementById('recipe-bookmark');
+
+        if (bookmark) {
+            bookmark.onclick = () => toggleFavorite(bookmark, rId);
+            if (userFavoritesIds.size > 0) {
+                const isFav = userFavoritesIds.has(rId);
+                bookmark.src = isFav ? '/static/images/bookmark_filled.svg' : '/static/images/bookmark.svg';
+            } else {
+                const token = localStorage.getItem('access_token');
+                if (token) {
+                    await loadUserFavoritesIds();
+                    const isFav = userFavoritesIds.has(rId);
+                    bookmark.src = isFav ? '/static/images/bookmark_filled.svg' : '/static/images/bookmark.svg';
+                }
+            }
+        }
+    } catch (e) {
+        console.error(e);
+        const loading = document.getElementById('recipe-loading');
+        if(loading) loading.textContent = 'Ошибка загрузки рецепта.';
+    }
+}
+
+function renderRecipePage(recipe) {
+    const loader = document.getElementById('recipe-loading');
+    if(loader) loader.style.display = 'none';
+    const content = document.getElementById('recipe-content');
+    if(content) content.style.display = 'block';
+    const titleEl = document.getElementById('recipe-title');
+    if(titleEl) titleEl.textContent = recipe.title;
+    const imgEl = document.getElementById('recipe-img');
+    if(imgEl) imgEl.src = recipe.image;
+    const timeEl = document.getElementById('recipe-time');
+    if(timeEl) timeEl.textContent = (recipe.readyInMinutes || '—') + ' мин.';
+    const servEl = document.getElementById('recipe-servings');
+    if(servEl) servEl.textContent = (recipe.servings || '—') + ' порц.';
+    const dishEl = document.getElementById('recipe-dish-type');
+    if(dishEl) dishEl.textContent = (recipe.dishTypes && recipe.dishTypes[0]) ? recipe.dishTypes[0] : 'dish';
+    const cuisEl = document.getElementById('recipe-cuisine');
+    if(cuisEl) cuisEl.textContent = (recipe.cuisines && recipe.cuisines[0]) ? recipe.cuisines[0] : 'universal';
+
+    const bookmark = document.getElementById('recipe-bookmark');
+    if(bookmark) {
+        const isFav = userFavoritesIds.has(parseInt(recipe.id));
+        bookmark.src = isFav ? '/static/images/bookmark_filled.svg' : '/static/images/bookmark.svg';
+        bookmark.onclick = () => toggleFavorite(bookmark, recipe.id);
+    }
+
+    if (recipe.nutrition && recipe.nutrition.nutrients) {
+        const findNut = (name) => {
+            const n = recipe.nutrition.nutrients.find(n => n.name === name);
+            return n ? Math.round(n.amount) : '—';
+        };
+        const cal = document.getElementById('nutri-cal'); if(cal) cal.textContent = findNut('Calories');
+        const pro = document.getElementById('nutri-prot'); if(pro) pro.textContent = findNut('Protein');
+        const fat = document.getElementById('nutri-fat'); if(fat) fat.textContent = findNut('Fat');
+        const carb = document.getElementById('nutri-carb'); if(carb) carb.textContent = findNut('Carbohydrates');
+    }
+
+    const ingList = document.getElementById('ing-list-track');
+    const ingTmpl = document.getElementById('tmpl-ingredient');
+    const ings = recipe.extendedIngredients || [];
+
+    if(ingList && ingTmpl) {
+        ingList.innerHTML = '';
+        ings.forEach(ing => {
+            const clone = ingTmpl.content.cloneNode(true);
+            const iImg = clone.querySelector('.ing-img');
+            if(iImg) iImg.src = `https://spoonacular.com/cdn/ingredients_100x100/${ing.image}`;
+
+            const iName = clone.querySelector('.ing-name');
+            if(iName) iName.textContent = ing.nameClean || ing.name;
+
+            const iAm = clone.querySelector('.ing-amount');
+            if(iAm) iAm.textContent = `${Math.round(ing.amount)} ${ing.unit}`;
+
+            ingList.appendChild(clone);
+        });
+
+        const track = document.getElementById('ing-list-track');
+        if(track.children.length > 0) {
+            track.children[0].style.marginLeft = '0px';
+        }
+        if (ings.length <= 5) {
+            track.style.justifyContent = 'center';
+        } else {
+            track.style.justifyContent = 'flex-start';
+        }
+        initIngCarousel(ings.length);
+    }
+    const stepsContainer = document.getElementById('steps-container');
+    const stepTmpl = document.getElementById('tmpl-step');
+
+    if(stepsContainer && stepTmpl) {
+        stepsContainer.innerHTML = '';
+        if (recipe.analyzedInstructions && recipe.analyzedInstructions.length > 0) {
+            recipe.analyzedInstructions[0].steps.forEach(step => {
+                const clone = stepTmpl.content.cloneNode(true);
+                clone.querySelector('.step-num').textContent = step.number + '.';
+                clone.querySelector('.step-text').textContent = step.step;
+                stepsContainer.appendChild(clone);
+            });
+        } else {
+            stepsContainer.innerHTML = '<p style="text-align:center">Инструкций нет.</p>';
+        }
+    }
+}
+
+window.initIngCarousel = function(totalCount) {
+    currentIngIndex = 0;
+    const prevBtn = document.querySelector('.ing-carousel-btn.prev-btn');
+    const nextBtn = document.getElementById('ing-btn-next');
+    if(prevBtn) prevBtn.classList.add('hidden');
+    if(nextBtn) {
+        if(totalCount <= ING_VISIBLE_COUNT) {
+            nextBtn.classList.add('hidden');
+        } else {
+            nextBtn.classList.remove('hidden');
+        }
+    }
+}
+
+window.moveIngCarousel = function(direction) {
+    const track = document.getElementById('ing-list-track');
+    if(!track) return;
+    const cards = track.children;
+    const total = cards.length;
+    const cardWidth = 175;
+
+    currentIngIndex += direction;
+    if (currentIngIndex < 0) currentIngIndex = 0;
+    if (currentIngIndex > total - 5) currentIngIndex = total - 5;
+    if (cards.length > 0) {
+        cards[0].style.marginLeft = `-${currentIngIndex * cardWidth}px`;
+        cards[0].style.transition = 'margin-left 0.3s ease';
+    }
+    const prevBtn = document.querySelector('.ing-carousel-btn.prev-btn');
+    const nextBtn = document.getElementById('ing-btn-next');
+    if (prevBtn) {
+        if (currentIngIndex === 0) prevBtn.classList.add('hidden');
+        else prevBtn.classList.remove('hidden');
+    }
+    if (nextBtn) {
+        if (currentIngIndex >= total - ING_VISIBLE_COUNT) nextBtn.classList.add('hidden');
+        else nextBtn.classList.remove('hidden');
+    }
+};

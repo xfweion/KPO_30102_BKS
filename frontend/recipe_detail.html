@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1200, initial-scale=1">
+    <title>Mix&Match — Рецепт</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="page page--recipe">
+
+    <!--Хэдер-->
+    <header class="site-header">
+        <div class="container site-header__inner">
+            <a class="brand" href="/" aria-label="Mix&Match — главная">
+                <img class="brand__logo" src="/static/images/logorec.png" alt="Mix&Match" />
+            </a>
+            <nav class="top-nav">
+                <a class="top-nav__item" href="/static/favorites.html">
+                    <img class="top-nav__icon" src="/static/images/like.svg" alt="" />
+                    <span class="top-nav__text">Избранное</span>
+                </a>
+                <a class="top-nav__item" href="/static/history.html">
+                    <img class="top-nav__icon" src="/static/images/search.svg" alt="" />
+                    <span class="top-nav__text">История<br>поиска</span>
+                </a>
+                <a class="top-nav__item" href="#" onclick="openModal('modal-login'); return false;">
+                    <img class="top-nav__icon" src="/static/images/human.svg" alt="" />
+                    <span class="top-nav__text">Вход</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="site-main">
+        <p id="recipe-loading" style="text-align: center; padding: 50px; font-size: 20px;">Загружаем рецепт...</p>
+        <div class="container recipe-container" style="display: none;" id="recipe-content">
+            <!--Фото+инфо-->
+            <div class="recipe-header-block">
+                <img class="recipe-page-bookmark" id="recipe-bookmark" src="/static/images/bookmark.svg" alt="В избранное">
+                <div class="recipe-image-wrapper">
+                    <img class="recipe-detail-img" id="recipe-img" src="" alt="">
+                </div>
+                <div class="recipe-info-block">
+                    <h1 class="recipe-detail-title" id="recipe-title">Название рецепта</h1>
+                    <div class="recipe-meta-row">
+                        <div class="recipe-meta-item">
+                            <img src="/static/images/clock.svg" alt=""> <span id="recipe-time">-- мин.</span>
+                        </div>
+                        <div class="recipe-meta-item">
+                            <img src="/static/images/fork.svg" alt=""> <span id="recipe-servings">-- порц.</span>
+                        </div>
+                    </div>
+                    <div class="recipe-tags-block">
+                        <span class="recipe-detail-tag tag-dish" id="recipe-dish-type">--</span>
+                        <span class="recipe-detail-tag tag-cuisine" id="recipe-cuisine">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!--Ингредиенты-->
+            <h2 class="section-title">ИНГРЕДИЕНТЫ</h2>
+            <div class="ingredients-section">
+                <button class="ing-carousel-btn prev-btn hidden" onclick="moveIngCarousel(-1)">
+                    <span style="font-family: 'LT Wave'; font-size: 30px; color: #D6B9B9; font-weight: bold;">&lt;</span>
+                </button>
+                <div class="ingredients-list" id="ing-list-track">
+                </div>
+                <button class="ing-carousel-btn next-btn" id="ing-btn-next" onclick="moveIngCarousel(1)">
+                    <span style="font-family: 'LT Wave'; font-size: 30px; color: #D6B9B9; font-weight: bold;">&gt;</span>
+                </button>
+            </div>
+
+            <!--КБЖУ-->
+            <h2 class="section-title">КБЖУ</h2>
+            <div class="nutrition-section">
+                <div class="nutri-circle circle-cal">
+                    <span class="nutri-val" id="nutri-cal">--</span>
+                    <span class="nutri-label">ккал</span>
+                </div>
+                <div class="nutri-circle circle-small circle-prot">
+                    <span class="nutri-val" id="nutri-prot">--</span>
+                    <span class="nutri-label">белки</span>
+                </div>
+                <div class="nutri-circle circle-small circle-fat">
+                    <span class="nutri-val" id="nutri-fat">--</span>
+                    <span class="nutri-label">жиры</span>
+                </div>
+                <div class="nutri-circle circle-small circle-carb">
+                    <span class="nutri-val" id="nutri-carb">--</span>
+                    <span class="nutri-label">углеводы</span>
+                </div>
+            </div>
+
+            <!--Шаги-->
+            <h2 class="section-title">ШАГИ</h2>
+            <div class="steps-section" id="steps-container">
+            </div>
+        </div>
+    </main>
+
+    <!--Футер-->
+    <footer class="site-footer">
+        <div class="container site-footer__inner">
+            <div class="site-footer__brand">
+                <img class="site-footer__logo" src="/static/images/logorec.png" alt="Mix&Match" />
+            </div>
+            <div class="site-footer__info">
+                <img class="site-footer__poly" src="/static/images/poly.png" alt="" aria-hidden="true" />
+                <div class="site-footer__text-block">
+                    <span class="footer-line-top">Сайт изготовлен при поддержке</span>
+                    <span class="footer-line-middle">СПбПУ им. Петра Великого</span>
+                    <span class="footer-line-city">г. Санкт-Петербург</span>
+                    <span class="footer-line-year">2025–2026</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!--Шаблон ингредиента -->
+    <template id="tmpl-ingredient">
+        <div class="ing-card">
+            <img class="ing-img" src="" alt="">
+            <div class="ing-name"></div>
+            <div class="ing-amount"></div>
+        </div>
+    </template>
+
+    <!--Шаблон шага -->
+    <template id="tmpl-step">
+        <div class="step-item">
+            <span class="step-num"></span>
+            <span class="step-text"></span>
+        </div>
+    </template>
+
+    <script src="/static/js/script.js"></script>
+</body>
+</html>

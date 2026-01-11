@@ -25,7 +25,7 @@ async def get_recipe_information(spoonacular_id: int) -> dict[str, Any]:
     url = f"{BASE_URL}/recipes/{spoonacular_id}/information"
     params = {
         "apiKey": SPOONACULAR_API_KEY,
-        "includeNutrition": False,
+        "includeNutrition": True,
     }
 
     async with httpx.AsyncClient(timeout=20) as client:
