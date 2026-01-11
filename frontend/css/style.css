@@ -1050,7 +1050,7 @@ img { display: block; max-width: 100%; height: auto; }
 .ing-pill {
     font-family: 'Cygre Book', sans-serif !important; /* 2. Шрифт */
     font-weight: normal;
-    background: #fff;
+    background: #F6F6F1;
     border: 1px solid #D8DCC8;
     color: #4A2D12;
     padding: 5px 15px;
@@ -1241,8 +1241,9 @@ img { display: block; max-width: 100%; height: auto; }
     max-width: 700px;
     margin-left: auto;
     margin-right: auto;
-    border: 1px solid rgba(229, 198, 149, 0.5);
     box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    border: 1px solid #D8DCC8;
+    font-size: 14px;
 }
 
 .history-item__label {
@@ -1273,14 +1274,14 @@ img { display: block; max-width: 100%; height: auto; }
 
 .history-chip {
     background: #F6F6F1;
-    padding: 10px 18px;
-    border-radius: 20px;
     font-family: 'Cygre Book', sans-serif;
     font-size: 15px;
     color: #4A2D12;
-    border: 1px solid rgba(229, 198, 149, 0.3);
     white-space: nowrap;
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    border: 1px solid #D8DCC8;
+    padding: 5px 15px;
+    border-radius: 20px;
 }
 
 .history-repeat-btn {
