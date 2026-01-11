@@ -30,8 +30,59 @@ document.addEventListener('DOMContentLoaded', () => {
     let allRecipes = [];
     let currentLimit = 10;
     let currentPage = 1;
-
     let userFavoritesIds = new Set();
+
+    // Элементы страницы истории
+    const historyGuestBlock = document.getElementById('history-guest-block');
+    const historyUserBlock = document.getElementById('history-user-block');
+    const historyList = document.getElementById('history-list');
+    const historyPagination = document.getElementById('history-pagination');
+    const historyPaginationPages = document.getElementById('history-pagination-pages');
+    const historyBtnPrev = document.querySelector('.history-pagination__prev');
+    const historyBtnNext = document.querySelector('.history-pagination__next');
+
+    let allHistory = [];
+    let historyCurrentPage = 1;
+    let historyCurrentLimit = 10;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const ingredientsFromUrl = urlParams.get('ingredients');
+
+    if (ingredientsFromUrl) {
+        const ings = ingredientsFromUrl.split(',');
+        ings.forEach(ing => {
+            if (ing && !selectedIngredients.includes(ing)) {
+                selectedIngredients.push(ing);
+            }
+        });
+        setTimeout(() => {
+             if (typeof renderTags === 'function') renderTags();
+        }, 0);
+        setTimeout(() => {
+            const searchBtn = document.querySelector('.search__btn');
+            if (searchBtn) {
+                searchBtn.click();
+            }
+        }, 100);
+    }
+
+    function renderHistoryPage() {
+        if (!historyList) return;
+        historyList.innerHTML = '';
+        const start = (historyCurrentPage - 1) * historyCurrentLimit;
+        const end = start + historyCurrentLimit;
+        const pageItems = allHistory.slice(start, end);
+
+        if (pageItems.length === 0) {
+            historyList.innerHTML = '<p style="text-align:center; padding:40px; color:#6B5E4B;">История пуста</p>';
+            if (historyPagination) historyPagination.style.display = 'none';
+            return;
+        }
+
+        pageItems.forEach(item => window.renderHistoryCard(item));
+        updateHistoryPagination();
+    }
+
     const token = localStorage.getItem('access_token');
     loadAuthModals();
 
@@ -46,6 +97,19 @@ document.addEventListener('DOMContentLoaded', () => {
             favUserBlock.classList.remove('is-hidden');
             loadFavoritesList();
         }
+    }
+
+    if (historyGuestBlock && historyUserBlock) {
+        if (!token) {
+            historyGuestBlock.classList.remove('is-hidden');
+        } else {
+            historyUserBlock.classList.remove('is-hidden');
+            loadHistory(); // грузим историю
+        }
+    }
+
+    if (!localStorage.getItem('searchHistory')) {
+        localStorage.setItem('searchHistory', JSON.stringify([]));
     }
 
     async function loadUserFavoritesIds() {
@@ -141,6 +205,102 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    window.renderHistoryCard = function(item) {
+        const template = document.getElementById('history-card-template');
+        if (!template || !historyList) return;
+        const clone = template.content.cloneNode(true);
+        const card = clone.querySelector('.history-item');
+        const chipsContainer = clone.querySelector('.history-item__chips');
+        if (chipsContainer) {
+            chipsContainer.innerHTML = '';
+            item.ingredients.forEach(ing => {
+                const chip = document.createElement('span');
+                chip.className = 'history-chip';
+                chip.textContent = ing;
+                chipsContainer.appendChild(chip);
+            });
+        }
+        const returnIcon = card.querySelector('.history-item__label img');
+        if (returnIcon) {
+            returnIcon.style.cursor = 'pointer';
+            returnIcon.onclick = () => {
+                const query = item.ingredients.join(',');
+                window.location.href = `/?ingredients=${encodeURIComponent(query)}`;
+            };
+        }
+        const labelText = card.querySelector('.history-item__label span');
+        if (labelText) {
+            labelText.style.cursor = 'pointer';
+            labelText.onclick = () => {
+                const query = item.ingredients.join(',');
+                window.location.href = `/?ingredients=${encodeURIComponent(query)}`;
+            };
+        }
+        historyList.appendChild(clone);
+    };
+
+    // Пагинация
+    function updateHistoryPagination() {
+        if (!historyPagination || !historyPaginationPages) return;
+        const totalPages = Math.ceil(allHistory.length / historyCurrentLimit);
+        if (totalPages <= 1) {
+            historyPagination.style.display = 'none';
+            return;
+        }
+        historyPagination.style.display = 'flex';
+        historyPaginationPages.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('div');
+            btn.className = `page-btn ${i === historyCurrentPage ? 'active' : ''}`;
+            btn.textContent = i;
+            btn.addEventListener('click', () => {
+                historyCurrentPage = i;
+                renderHistoryPage();
+                window.scrollTo({ top: historyList.offsetTop - 50, behavior: 'smooth' });
+            });
+            historyPaginationPages.appendChild(btn);
+        }
+        if (historyBtnPrev) {
+            historyBtnPrev.disabled = historyCurrentPage === 1;
+            historyBtnPrev.onclick = () => {
+                if (historyCurrentPage > 1) {
+                    historyCurrentPage--;
+                    renderHistoryPage();
+                }
+            };
+        }
+        if (historyBtnNext) {
+            const totalPages = Math.ceil(allHistory.length / historyCurrentLimit);
+            historyBtnNext.disabled = historyCurrentPage === totalPages;
+            historyBtnNext.onclick = () => {
+                if (historyCurrentPage < totalPages) {
+                    historyCurrentPage++;
+                    renderHistoryPage();
+                }
+            };
+        }
+    }
+
+    async function loadHistory() {
+        let history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+        if (token) {
+            try {
+                const res = await fetch('/history', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const serverHistory = await res.json();
+                    history = [...(Array.isArray(serverHistory) ? serverHistory : []), ...history];
+                }
+            } catch (e) {
+                console.error('Backend история не доступна:', e);
+            }
+        }
+        allHistory = history.slice(0, 200);
+        historyCurrentPage = 1;
+        renderHistoryPage();
+    }
+
     function addTag(name) {
         if (selectedIngredients.includes(name)) return;
         selectedIngredients.push(name);
@@ -207,6 +367,15 @@ document.addEventListener('DOMContentLoaded', () => {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (selectedIngredients.length === 0) { alert("Выберите ингредиенты!"); return; }
+            const searchItem = {
+            id: Date.now(),
+            ingredients: [...selectedIngredients],
+            timestamp: new Date().toISOString()
+            };
+            let history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+            history.unshift(searchItem);
+            history = history.slice(0, 200);
+            localStorage.setItem('searchHistory', JSON.stringify(history));
 
             const ingredientsStr = selectedIngredients.join(',');
 
@@ -319,6 +488,47 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     const limitBtns = document.querySelectorAll('.limit-btn');
+
+    const historyLimitBtns = document.querySelectorAll('#history-limit-controls .limit-btn');
+    historyLimitBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            historyLimitBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            historyCurrentLimit = parseInt(btn.dataset.limit);
+            historyCurrentPage = 1;
+            renderHistoryPage();
+        });
+    });
+
+    const favLimitBtns = document.querySelectorAll('.results-limit .limit-btn, .fav-limits-buttons .limit-btn, .fav-controls-bar .limit-btn');
+
+    favLimitBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            favLimitBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            currentFavLimit = parseInt(btn.dataset.limit);
+            currentFavPage = 1;
+            renderFavPage();
+        });
+    });
+
+    const mainLimitBtns = document.querySelectorAll('.limit-btn:not(#history-limit-controls .limit-btn):not(.fav-controls-bar .limit-btn)');
+    mainLimitBtns.forEach(btn => {
+        if (btn.closest('#history-limit-controls') || btn.closest('.fav-controls-bar') || btn.closest('.results-limit')) return;
+        btn.addEventListener('click', () => {
+             document.querySelectorAll('.limit-btn').forEach(b => {
+                 if (!b.closest('#history-limit-controls') && !b.closest('.fav-controls-bar')) {
+                     b.classList.remove('active');
+                 }
+             });
+             btn.classList.add('active');
+             currentLimit = parseInt(btn.dataset.limit);
+             currentPage = 1;
+             renderPage();
+        });
+    });
+
     limitBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             limitBtns.forEach(b => b.classList.remove('active'));

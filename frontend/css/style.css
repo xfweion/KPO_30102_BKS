@@ -625,6 +625,14 @@ img { display: block; max-width: 100%; height: auto; }
 .pagination__arrow:hover { color: #3A2301; }
 .pagination__arrow:disabled { opacity: 0.3; cursor: default; }
 
+.page-btn,
+.pagination .page-btn,
+#fav-pagination .page-btn,
+#history-pagination .page-btn {
+    font-family: 'Cygre Book', sans-serif !important;
+    font-weight: normal !important; /* Если нужно не жирным */
+}
+
 /* СТРАНИЦЫ ВХОДА И РЕГИСТРАЦИИ */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -1078,3 +1086,274 @@ img { display: block; max-width: 100%; height: auto; }
     font-weight: bold;
 }
 .search-limits { display: flex; gap: 10px; }
+
+/*СТРАНИЦА ИСТОРИИ ПОИСКА*/
+.page--history {
+    background: #F6F6F1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.page--history main {
+    flex: 1;
+}
+
+/*Заголовок и фрукты*/
+.history-header {
+    position: relative;
+    text-align: center;
+    height: 170px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 0 20px;
+}
+
+.history-decor {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    max-width: 700px;
+    min-width: 750px;
+    height: auto;
+    z-index: 1;
+}
+
+.history-title {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    line-height: 0.9;
+}
+
+.history-title__top {
+    font-family: 'Yiggivoo Unicode', serif;
+    font-size: 80px;
+    color: #604319;
+    margin-right: 150px;
+    font-weight: normal;
+}
+
+.history-title__bottom {
+    font-family: 'Catallina', serif;
+    font-size: 90px;
+    color: #7C8950;
+    margin-left: 175px;
+    margin-top: 10px;
+    font-weight: normal;
+}
+
+/*Панели*/
+.history-panel {
+    max-width: 1000px;
+    margin: 0 auto 40px;
+}
+
+#history-list, #history-pagination {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.history-list {
+    min-height: 200px;
+    margin-bottom: 30px;
+}
+
+.history-limits-wrapper {
+    max-width: 1000px;
+    margin: 0 auto 20px;
+    padding-left: 20px;
+    justify-content: flex-start;
+}
+
+/*Панель c брокколи*/
+.auth-required-panel {
+    background: linear-gradient(90deg, #D6E0B1 0%, #F5E7E4 50%, #D6E0B1 100%);
+    border-radius: 50px;
+    padding: 30px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    margin: 0 auto;
+    border: 1px solid rgba(168, 175, 142, 0.4);
+    box-shadow: 0 15px 30px rgba(78, 85, 45, 0.15);
+    max-width: 730px !important;
+    width: 730px !important;
+}
+
+.broccoli-img {
+    width: 180px;
+    height: auto;
+    margin-bottom: -30px;
+}
+
+.auth-msg {
+    font-family: 'Cygre Book', sans-serif;
+    font-size: 24px;
+    color: #3A2301;
+    margin-bottom: 5px;
+}
+
+.auth-msg-title {
+    font-family: 'Yiggivoo Unicode', serif;
+    font-size: 28px;
+    color: #3A2301;
+    font-style: italic;
+}
+
+.auth-action {
+    display: flex;
+    align-items: baseline;
+}
+
+.auth-btn--yellow {
+    background: #EBC968;
+    color: #3A2301;
+    border: none;
+    padding: 8px 35px;
+    border-radius: 30px;
+    font-family: 'Cygre Book', sans-serif;
+    font-weight: bold;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(235, 201, 104, 0.4);
+    margin-left: 20px;
+    position: relative;
+    top: -2px;
+    transition: transform 0.2s ease;
+}
+
+.auth-btn--yellow:hover {
+    transform: translateY(-2px);
+}
+
+/*Плашки историй поиска*/
+.history-item {
+    background: rgba(229, 198, 149, 0.35);
+    border-radius: 25px;
+    padding: 20px 25px;
+    margin-bottom: 20px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid rgba(229, 198, 149, 0.5);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+}
+
+.history-item__label {
+    font-family: 'LT Wave', sans-serif;
+    color: #4A2D12;
+    font-size: 20px;
+    font-weight: normal;
+    margin-bottom: 15px;
+    position: relative;
+    text-align: center;
+}
+
+.history-item__label img {
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: auto;
+}
+
+.history-item__chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+}
+
+.history-chip {
+    background: #F6F6F1;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-family: 'Cygre Book', sans-serif;
+    font-size: 15px;
+    color: #4A2D12;
+    border: 1px solid rgba(229, 198, 149, 0.3);
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.history-repeat-btn {
+    background: #EBC968;
+    color: #3A2301;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-family: 'Cygre Book', sans-serif;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(235, 201, 104, 0.4);
+    transition: transform 0.2s;
+    margin-top: 15px;
+}
+
+.history-repeat-btn:hover {
+    transform: translateY(-2px);
+}
+
+.page--history .top-nav__item.active .top-nav__icon {
+    filter: none !important;
+}
+
+/* Показывать по*/
+
+.history-limits-wrapper {
+    max-width: 1000px;
+    margin: 0 auto 30px;
+    padding-left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.history-limits-label {
+    font-family: 'Cygre Book', sans-serif;
+    font-weight: bold;
+    font-size: 18px;
+    color: #3A2301;
+}
+
+.history-limits-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.history-limits-buttons .limit-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    font-family: 'Cygre Book', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s;
+}
+
+.history-limits-buttons .limit-btn:nth-child(1) { background-color: #B1B997; }
+.history-limits-buttons .limit-btn:nth-child(2) { background-color: #E5C695; }
+.history-limits-buttons .limit-btn:nth-child(3) { background-color: #F3CBCC; }
+
+.history-limits-buttons .limit-btn:hover {
+    transform: scale(1.1);
+}
+
+.history-limits-buttons .limit-btn.active {
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border: 1px solid rgba(0,0,0,0.1);
+}
+

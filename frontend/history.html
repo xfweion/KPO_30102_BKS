@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1200, initial-scale=1" />
+  <title>Mix&Match — История поиска</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<body class="page page--history">
+
+<!--Хэдер-->
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href="/" aria-label="Mix&Match — главная">
+      <img class="brand__logo" src="/static/images/logorec.png" alt="Mix&Match" />
+    </a>
+
+    <nav class="top-nav" aria-label="Навигация">
+      <a class="top-nav__item" href="/static/favorites.html">
+        <img class="top-nav__icon" src="/static/images/like.svg" alt="" />
+        <span class="top-nav__text">Избранное</span>
+      </a>
+      <a class="top-nav__item active" href="/static/history.html">
+        <img class="top-nav__icon" src="/static/images/search_filled.svg" alt="" />
+        <span class="top-nav__text">История<br>поиска</span>
+      </a>
+      <a class="top-nav__item" href="#" onclick="openModal('modal-login'); return false;">
+        <img class="top-nav__icon" src="/static/images/human.svg" alt="" />
+        <span class="top-nav__text">Вход</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main class="site-main">
+
+  <!--Фрукты и заголовок-->
+  <div class="container">
+    <section class="history-header">
+      <img class="history-decor" src="/static/images/fruttieshistory.png" alt="">
+      <h1 class="history-title">
+        <span class="history-title__top">История</span>
+        <span class="history-title__bottom">ПОИСКА</span>
+      </h1>
+    </section>
+  </div>
+
+  <!--Панель с брокколи-->
+  <div style="max-width: 1000px; margin: 0 auto;">
+    <section id="history-guest-block" class="auth-required-panel is-hidden">
+      <img class="broccoli-img" src="/static/images/sadbroccoli.png" alt="">
+      <div>
+        <p class="auth-msg">К сожалению, пока не доступна</p>
+        <div class="auth-action">
+          <span class="auth-msg-title">Требуется</span>
+          <button class="auth-btn--yellow" onclick="openModal('modal-login')">Войти</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="container">
+    <section id="history-user-block" class="history-panel is-hidden">
+      <div id="history-limit-controls" class="history-limits-wrapper">
+          <span class="history-limits-label">Показывать по:</span>
+          <div class="history-limits-buttons">
+              <button class="limit-btn active" data-limit="10">10</button>
+              <button class="limit-btn" data-limit="20">20</button>
+              <button class="limit-btn" data-limit="30">30</button>
+          </div>
+      </div>
+
+      <div id="history-list" class="history-list">
+        <p style="text-align:center; padding:40px;">Загружаем...</p>
+      </div>
+
+      <div class="pagination" id="history-pagination" style="display:none;">
+        <button class="pagination__arrow history-pagination__prev" disabled>&lt;</button>
+        <div class="pagination__pages" id="history-pagination-pages"></div>
+        <button class="pagination__arrow history-pagination__next">&gt;</button>
+      </div>
+    </section>
+
+    <!--Шаблон карточки истории-->
+    <template id="history-card-template">
+        <div class="history-item">
+            <div class="history-item__label">
+                <img src="/static/images/return.svg" alt="Повторить">
+                <span>Желаемые ингредиенты</span>
+            </div>
+            <div class="history-item__chips">
+                <span class="history-chip"></span>
+                <span class="history-chip"></span>
+                <span class="history-chip"></span>
+            </div>
+        </div>
+    </template>
+  </div>
+
+</main>
+
+<!--Футер-->
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <div class="site-footer__brand">
+      <img class="site-footer__logo" src="/static/images/logorec.png" alt="Mix&Match" />
+    </div>
+    <div class="site-footer__info">
+      <img class="site-footer__poly" src="/static/images/poly.png" alt="" aria-hidden="true" />
+      <div class="site-footer__text-block">
+        <span class="footer-line-top">Сайт изготовлен при поддержке</span>
+        <span class="footer-line-middle">СПбПУ им. Петра Великого</span>
+        <span class="footer-line-city">г. Санкт-Петербург</span>
+        <span class="footer-line-year">2025–2026</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="/static/js/script.js"></script>
+</body>
+</html>
