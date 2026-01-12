@@ -80,7 +80,7 @@ async def test_get_recipe_information_ok(monkeypatch):
     assert data["title"] == "Mock"
     assert fake.last_url.endswith("/recipes/123/information")
     assert fake.last_params["apiKey"] == "test-key"
-    assert fake.last_params["includeNutrition"] is False
+    assert fake.last_params["includeNutrition"] is True
 
 
 @pytest.mark.asyncio
