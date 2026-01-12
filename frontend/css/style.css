@@ -6,12 +6,12 @@
 }
 @font-face {
     font-family: 'Catallina';
-    src: url('/static/fonts/Catallina.OTF') format('opentype');
+    src: url('/static/fonts/Catallina.ttf') format('truetype');
     font-weight: normal; font-style: normal;
 }
 @font-face {
     font-family: 'LT Wave';
-    src: url('/static/fonts/LTWave.otf') format('opentype');
+    src: url('/static/fonts/LTWave-Regular.ttf') format('truetype');
     font-weight: normal; font-style: normal;
 }
 @font-face {
