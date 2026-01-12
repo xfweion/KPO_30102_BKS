@@ -22,7 +22,7 @@ def test_search_saves_history_when_authed(client, monkeypatch):
     headers = {"Authorization": f"Bearer {token}"}
 
     r = client.post(
-        "/search",
+        "/search/search",
         json={"ingredients": ["tomato", "cheese"], "number": 2},
         headers=headers,
     )
