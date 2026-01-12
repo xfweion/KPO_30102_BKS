@@ -1,17 +1,17 @@
 /* Шрифты */
 @font-face {
     font-family: 'Yiggivoo Unicode';
-    src: url('/static/fonts/YiggivooUnicode.ttf') format('truetype');
+    src: url('/static/fonts/YiggivooUnicode.TTF') format('truetype');
     font-weight: normal; font-style: normal;
 }
 @font-face {
     font-family: 'Catallina';
-    src: url('/static/fonts/Catallina.ttf') format('truetype');
+    src: url('/static/fonts/Catallina.OTF') format('opentype');
     font-weight: normal; font-style: normal;
 }
 @font-face {
     font-family: 'LT Wave';
-    src: url('/static/fonts/LTWave.ttf') format('truetype');
+    src: url('/static/fonts/LTWave.otf') format('opentype');
     font-weight: normal; font-style: normal;
 }
 @font-face {
